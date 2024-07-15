@@ -10,6 +10,7 @@ import { db } from '../../../firebaseconfig';
 const ChatList = () => {
   const [chats, setChats] = useState([]);
   const [addMode, setAddMode] = useState(false);
+  const [input, setInput] = useState("");
   const addUserRef = useRef(null);
 
   const { currentUser } = useUserStore();
@@ -85,12 +86,16 @@ const ChatList = () => {
     }
   }
 
+  const filteredChat = chats.filter((c) => 
+    c.user.username.toLowerCase().includes(input.toLowerCase())
+  )
+
   return (
     <div className='chatList'>
       <div className='search'>
         <div className='searchBar'>
           <img src={images.SearchIcon} alt='' />
-          <input type='text' placeholder='Search' />
+          <input type='text' placeholder='Search' onChange={(e) => setInput(e.target.value)}/>
         </div>
         <img
           src={addMode ? images.MinusIcon : images.PlusIcon}
@@ -99,7 +104,7 @@ const ChatList = () => {
           onClick={toggleAddMode}
         />
       </div>
-      {chats.map((chat) => (
+      {filteredChat.map((chat) => (
         <div 
           className='item'
           key={chat.chatId}
@@ -108,9 +113,19 @@ const ChatList = () => {
             backgroundColor: chat?.isSeen ? "transparent" : "#5183fe",
           }}
         >
-          <img src={chat.user.avatar||images.AvatarIcon} alt='' />
+          <img
+            src={
+              chat.user.blocked.includes(currentUser.id)
+              ? images.AvatarIcon
+              : chat.user.avatar || images.AvatarIcon
+              } alt='' />
           <div className='texts'>
-            <span>{chat.user.username}</span>
+            <span>
+              {chat.user.blocked.includes(currentUser.id)
+                ? "User"
+                : chat.user.username
+              }
+            </span>
             <p>{chat.lastMessage}</p>
           </div>
         </div>
